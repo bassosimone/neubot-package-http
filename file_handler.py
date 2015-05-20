@@ -20,23 +20,23 @@ class FileHandler(object):
         logging.debug("fh: user specified rootdir: %s", rootdir)
         rootdir = os.path.abspath(os.path.realpath(os.path.abspath(rootdir)))
         logging.debug("fh: absolute rootdir is: %s", rootdir)
-        self.rootdir = rootdir
-        self.default_file = default_file
+        self._rootdir = rootdir
+        self._default_file = default_file
 
     def resolve_path(self, path):
         """ Safely maps HTTP path to filesystem path """
 
-        logging.debug("fh: rootdir %s", self.rootdir)
+        logging.debug("fh: rootdir %s", self._rootdir)
         logging.debug("fh: original path %s", path)
 
-        path = os.sep.join([self.rootdir, path])
+        path = os.sep.join([self._rootdir, path])
         path = os.path.abspath(path)             # Process "../"s
         path = os.path.realpath(path)            # Resolve symlinks
         path = os.path.abspath(path)             # Just in case
 
         logging.debug("fh: normalized path %s", path)
 
-        if not path.startswith(self.rootdir):
+        if not path.startswith(self._rootdir):
             return
 
         return path
@@ -81,14 +81,14 @@ class FileHandler(object):
 
     def serve_directory(self, connection, request, path):
         """ Serve the directory at path """
-        path = os.sep.join([path, self.default_file])
+        path = os.sep.join([path, self._default_file])
         logging.debug("fh: url isdir; trying with: %s", path)
         self.serve_file(connection, request, path)
 
     def __call__(self, connection, request):
         """ Process HTTP request for file resources """
 
-        if not self.rootdir:
+        if not self._rootdir:
             logging.warning("fh: rootdir is not set")
             connection.write(writer.compose_error(403, "Forbidden"))
             return

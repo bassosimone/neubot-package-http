@@ -11,47 +11,74 @@ class HTTPMessage(object):
     """ HTTP message object """
 
     def __init__(self):
-        self.method = ""
-        self.url = ""
-        self.protocol = ""
-        self.code = ""
-        self.reason = ""
-        self.headers = {}
-        self.bodyv = []
+        self._method = ""
+        self._url = ""
+        self._protocol = ""
+        self._code = ""
+        self._reason = ""
+        self._headers = {}
+        self._bodyv = []
+
+    @property
+    def method(self):
+        """ Get method """
+        return self._method
+
+    @property
+    def url(self):
+        """ Get url """
+        return self._url
+
+    @property
+    def protocol(self):
+        """ Get protocol """
+        return self._protocol
+
+    @property
+    def code(self):
+        """ Get code """
+        return self._code
+
+    @property
+    def reason(self):
+        """ Get reason """
+        return self._reason
 
     @staticmethod
     def request(method, url, protocol, headers):
         """ Constructs a request message """
+        # pylint: disable = protected-access
         message = HTTPMessage()
-        message.method = method
-        message.url = url
-        message.protocol = protocol
-        message.headers = headers
+        message._method = method
+        message._url = url
+        message._protocol = protocol
+        message._headers = headers
         return message
 
     @staticmethod
     def response(protocol, code, reason, headers):
         """ Constructs a response message """
+        # pylint: disable = protected-access
         message = HTTPMessage()
-        message.protocol = protocol
-        message.code = code
-        message.reason = reason
-        message.headers = headers
+        message._protocol = protocol
+        message._code = code
+        message._reason = reason
+        message._headers = headers
         return message
 
     def __getitem__(self, key):
         key = key.lower()
-        if key not in self.headers:
+        if key not in self._headers:
             return ""
-        return self.headers[key]
+        return self._headers[key]
 
     def add_body_chunk(self, chunk):
         """ Add chunk to body """
-        self.bodyv.append(chunk)
+        self._bodyv.append(chunk)
 
     def body_as_string(self, encoding=None):
         """ Return the body as string """
-        binary = b"".join(self.bodyv)
+        binary = b"".join(self._bodyv)
         if encoding:
             return binary.decode(encoding)
         content_type = self["content-type"].lower()
@@ -67,4 +94,4 @@ class HTTPMessage(object):
 
     def body_as_bytes(self):
         """ Return the body as bytes """
-        return b"".join(self.bodyv)
+        return b"".join(self._bodyv)
