@@ -16,14 +16,41 @@ from .parser import HTTPParser
 
 from . import writer
 
+class HTTPRequestHandler(object):
+    """ HTTP request handler """
+
+    def on_request(self, connection, request):
+        """ Call when headers are received """
+
+    def on_data(self, connection, request, chunk):
+        """ Called when data is received """
+
+    def on_end(self, connection, request):
+        """ Called at end of request """
+
+class BodyReceiverHandler(HTTPRequestHandler):
+    """ Handler that expects to receive a body """
+
+    def on_request(self, connection, request):
+        """ Send '100 Continue' if this is expected by client """
+        if request["expect"].lower() == "100-continue":
+            connection.write(writer.compose_headers("100", "Continue", {}))
+
+class NotFoundHandler(HTTPRequestHandler):
+    """ '404 Not Found' handler """
+
+    def on_end(self, connection, _):
+        connection.write(writer.compose_error("404", "Not Found"))
+
 class HTTPRequestDispatcher(asyncore.dispatcher):
     """ HTTP request dispatcher """
 
     def __init__(self, server, sock=None, mapx=None):
         asyncore.dispatcher.__init__(self, sock, mapx)
-        self._server = server
+        self._handler = HTTPRequestHandler()
         self._parser = HTTPParser()
         self._queue = HTTPOutputQueue()
+        self._server = server
 
     def handle_read(self):
         data = self.recv(65535)
@@ -40,11 +67,12 @@ class HTTPRequestDispatcher(asyncore.dispatcher):
     def _emit(self, event):
         """ Emit the specified event """
         if event[0] == "request":
-            self._server.pre_check(self, event[1])
+            self._handler = self._server.route(event[1])
+            self._handler.on_request(self, event[1])
         elif event[0] == "data":
-            event[1].add_body_chunk(event[2])
+            self._handler.on_data(self, event[1], event[2])
         elif event[0] == "end":
-            self._server.route(self, event[1])
+            self._handler.on_end(self, event[1])
         else:
             raise RuntimeError
 
@@ -74,25 +102,8 @@ class HTTPServer(asyncore.dispatcher):
         """ Add a route """
         self._routes[url] = generator
 
-    @staticmethod
-    def pre_check(connection, request):
-        """ Pre check incoming request """
-        if request["expect"].lower() == "100-continue":
-            connection.write(writer.compose_headers("100", "Continue", {}))
-
-    def route(self, connection, request):
+    def route(self, request):
         """ Route request """
-        try:
-            self._route(connection, request)
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            logging.warning("unhandled exception", exc_info=1)
-            connection.write(writer.compose_error("500",
-                             "Internal Server Error"))
-
-    def _route(self, connection, request):
-        """ Internal route function """
 
         url = request.url
         logging.debug("http: router received url: %s", url)
@@ -102,11 +113,10 @@ class HTTPServer(asyncore.dispatcher):
             logging.debug("http: router url without query: %s", url)
 
         if url in self._routes:
-            self._routes[url](connection, request)
-        elif self._file_handler:
-            self._file_handler(connection, request)
-        else:
-            connection.write(writer.compose_error("404", "Not Found"))
+            return self._routes[url]()
+        if self._file_handler:
+            return self._file_handler()
+        return NotFoundHandler()
 
     def handle_accept(self):
         result = self.accept()
