@@ -14,7 +14,7 @@
      import json
      from neubot_scheduler import http
 
-     @http.HTTPResponseGenerator
+     @http.ResponseGenerator
      def simple(connection, request):
          response = {
              "method": request.method,
@@ -42,5 +42,5 @@
 __version__ = 2.0
 
 from .file_handler import FileHandler
-from .core import HTTPRequestHandler, HTTPResponseGenerator, listen
+from .core import RequestHandler, ResponseGenerator, listen
 from . import writer

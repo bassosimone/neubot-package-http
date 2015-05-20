@@ -11,7 +11,7 @@ import logging
 import mimetypes
 import os
 
-from .core import HTTPRequestHandler
+from .core import RequestHandler
 from . import writer
 
 class FileHandler(object):
@@ -37,7 +37,7 @@ class FileHandler(object):
         """ Get default file """
         return self._default_file
 
-class FileRequestHandler(HTTPRequestHandler):
+class FileRequestHandler(RequestHandler):
     """ File request handler """
 
     def __init__(self, rootdir, default_file):

@@ -7,7 +7,7 @@
 
 """ HTTP messages """
 
-class HTTPMessage(object):
+class Message(object):
     """ HTTP message object """
 
     def __init__(self):
@@ -48,7 +48,7 @@ class HTTPMessage(object):
     def request(method, url, protocol, headers):
         """ Constructs a request message """
         # pylint: disable = protected-access
-        message = HTTPMessage()
+        message = Message()
         message._method = method
         message._url = url
         message._protocol = protocol
@@ -59,7 +59,7 @@ class HTTPMessage(object):
     def response(protocol, code, reason, headers):
         """ Constructs a response message """
         # pylint: disable = protected-access
-        message = HTTPMessage()
+        message = Message()
         message._protocol = protocol
         message._code = code
         message._reason = reason

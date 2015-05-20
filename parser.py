@@ -9,12 +9,12 @@
 
 import logging
 
-from .messages import HTTPMessage
+from .messages import Message
 
-class HTTPError(RuntimeError):
+class Error(RuntimeError):
     """ Indicates a protocol error """
 
-class HTTPParser(object):
+class Parser(object):
     """ HTTP messages parser """
 
     def __init__(self):
@@ -67,7 +67,7 @@ class HTTPParser(object):
         """ Read a line from input buffer (interface) """
         length, line = self._readline_internal(self._maxline)
         if length < 0:
-            raise HTTPError
+            raise Error
         if length == 0:
             return ""
         logging.debug("< %s", line.strip())
@@ -94,21 +94,21 @@ class HTTPParser(object):
             line = line.strip()
             first_line = line.split(None, 3)
             if len(first_line) != 3:
-                raise HTTPError
+                raise Error
 
             if first_line[0].startswith("HTTP/"):
                 isresponse = True
             elif first_line[2].startswith("HTTP/"):
                 isresponse = False
             else:
-                raise HTTPError
+                raise Error
 
             logging.debug("* HEADERS")
             last_hdr = ""
             headers = {}
             while True:
                 if len(headers) > self._maxheaders:
-                    raise HTTPError
+                    raise Error
                 line = self._readline()
                 while not line:
                     yield ()
@@ -122,17 +122,17 @@ class HTTPParser(object):
                 else:
                     pos = line.find(":")
                     if pos < 0:
-                        raise HTTPError
+                        raise Error
                     last_hdr, value = line.split(":", 1)
                     last_hdr, value = last_hdr.strip().lower(), value.strip()
                 headers[last_hdr] = value
 
             if isresponse:
-                message = HTTPMessage.response(first_line[0], first_line[1],
+                message = Message.response(first_line[0], first_line[1],
                                                first_line[2], headers)
                 yield ("response", message)
             else:
-                message = HTTPMessage.request(first_line[0], first_line[1],
+                message = Message.request(first_line[0], first_line[1],
                                               first_line[2], headers)
                 yield ("request", message)
 
@@ -149,7 +149,7 @@ class HTTPParser(object):
                     vector = line.split()
                     length = int(vector[0], 16)
                     if length < 0:
-                        raise HTTPError
+                        raise Error
                     if length == 0:
                         break
 
@@ -185,7 +185,7 @@ class HTTPParser(object):
                 logging.debug("* BOUNDED_BODY")
                 length = int(headers["content-length"])
                 if length < 0:
-                    raise HTTPError
+                    raise Error
                 while length > 0:
                     data = self._read(length)
                     if not data:

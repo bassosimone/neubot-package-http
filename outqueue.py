@@ -9,7 +9,7 @@
 
 import collections
 
-class HTTPOutputQueue(object):
+class OutputQueue(object):
     """ Output queue """
 
     def __init__(self, default_encoding="iso-8859-1"):

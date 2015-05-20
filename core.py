@@ -11,12 +11,12 @@ import asyncore
 import logging
 import socket
 
-from .outqueue import HTTPOutputQueue
-from .parser import HTTPParser
+from .outqueue import OutputQueue
+from .parser import Parser
 
 from . import writer
 
-class HTTPRequestHandler(object):
+class RequestHandler(object):
     """ HTTP request handler """
 
     def on_request(self, connection, request):
@@ -28,7 +28,7 @@ class HTTPRequestHandler(object):
     def on_end(self, connection, request):
         """ Called at end of request """
 
-class HTTPResponseGenerator(HTTPRequestHandler):
+class ResponseGenerator(RequestHandler):
     """ Decorator to reply using a simple function """
 
     def __init__(self, callback):
@@ -40,7 +40,7 @@ class HTTPResponseGenerator(HTTPRequestHandler):
     def on_end(self, connection, request):
         self._callback(connection, request)
 
-class BodyReceiverHandler(HTTPRequestHandler):
+class BodyReceiverHandler(RequestHandler):
     """ Handler that expects to receive a body """
 
     def on_request(self, connection, request):
@@ -48,20 +48,20 @@ class BodyReceiverHandler(HTTPRequestHandler):
         if request["expect"].lower() == "100-continue":
             connection.write(writer.compose_headers("100", "Continue", {}))
 
-class NotFoundHandler(HTTPRequestHandler):
+class NotFoundHandler(RequestHandler):
     """ '404 Not Found' handler """
 
     def on_end(self, connection, _):
         connection.write(writer.compose_error("404", "Not Found"))
 
-class HTTPRequestDispatcher(asyncore.dispatcher):
+class RequestDispatcher(asyncore.dispatcher):
     """ HTTP request dispatcher """
 
     def __init__(self, server, sock=None, mapx=None):
         asyncore.dispatcher.__init__(self, sock, mapx)
-        self._handler = HTTPRequestHandler()
-        self._parser = HTTPParser()
-        self._queue = HTTPOutputQueue()
+        self._handler = RequestHandler()
+        self._parser = Parser()
+        self._queue = OutputQueue()
         self._server = server
 
     def handle_read(self):
@@ -102,10 +102,10 @@ class HTTPRequestDispatcher(asyncore.dispatcher):
             if chunk:
                 self.reinsert_partial_chunk(chunk)
 
-class HTTPServer(asyncore.dispatcher):
+class Server(asyncore.dispatcher):
     """ HTTP server """
 
-    def __init__(self, file_handler=None, factory=HTTPRequestDispatcher):
+    def __init__(self, file_handler=None, factory=RequestDispatcher):
         asyncore.dispatcher.__init__(self)
         self._factory = factory
         self._file_handler = file_handler
@@ -150,7 +150,7 @@ def listen(settings):
 
     epnt = settings["hostname"], int(settings["port"])
 
-    server = HTTPServer(settings["file_handler"])
+    server = Server(settings["file_handler"])
     for key in settings["routes"]:
         server.add_route(key, settings["routes"][key])
     server.create_socket(settings["family"], socket.SOCK_STREAM)
