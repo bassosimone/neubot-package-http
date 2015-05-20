@@ -93,10 +93,11 @@ class HTTPRequestDispatcher(asyncore.dispatcher):
 class HTTPServer(asyncore.dispatcher):
     """ HTTP server """
 
-    def __init__(self, file_handler=None):
+    def __init__(self, file_handler=None, factory=HTTPRequestDispatcher):
         asyncore.dispatcher.__init__(self)
-        self._routes = {}
+        self._factory = factory
         self._file_handler = file_handler
+        self._routes = {}
 
     def add_route(self, url, generator):
         """ Add a route """
@@ -123,7 +124,7 @@ class HTTPServer(asyncore.dispatcher):
         if not result:
             return
         sock = result[0]
-        HTTPRequestDispatcher(self, sock)
+        self._factory(self, sock)
 
 def listen(settings):
     """ Listen for HTTP requests """
