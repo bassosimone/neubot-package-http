@@ -28,7 +28,15 @@ class RequestHandler(object):
     def on_end(self, connection, request):
         """ Called at end of request """
 
-class RequestProcessor(RequestHandler):
+class BodyReceiverHandler(RequestHandler):
+    """ Handler that expects to receive a body """
+
+    def on_request(self, connection, request):
+        """ Send '100 Continue' if this is expected by client """
+        if request["expect"].lower() == "100-continue":
+            connection.write(writer.compose_headers("100", "Continue", {}))
+
+class RequestProcessor(BodyReceiverHandler):
     """ Decorator to reply using a simple function """
 
     def __init__(self, callback):
@@ -37,16 +45,11 @@ class RequestProcessor(RequestHandler):
     def __call__(self):
         return self
 
+    def on_data(self, _, request, chunk):
+        request.add_body_chunk(chunk)
+
     def on_end(self, connection, request):
         self._callback(connection, request)
-
-class BodyReceiverHandler(RequestHandler):
-    """ Handler that expects to receive a body """
-
-    def on_request(self, connection, request):
-        """ Send '100 Continue' if this is expected by client """
-        if request["expect"].lower() == "100-continue":
-            connection.write(writer.compose_headers("100", "Continue", {}))
 
 class NotFoundHandler(RequestHandler):
     """ '404 Not Found' handler """
