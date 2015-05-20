@@ -28,7 +28,7 @@ class RequestHandler(object):
     def on_end(self, connection, request):
         """ Called at end of request """
 
-class ResponseGenerator(RequestHandler):
+class RequestProcessor(RequestHandler):
     """ Decorator to reply using a simple function """
 
     def __init__(self, callback):
