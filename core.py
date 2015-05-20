@@ -36,6 +36,9 @@ class BodyReceiverHandler(RequestHandler):
         if request["expect"].lower() == "100-continue":
             connection.write(writer.compose_headers("100", "Continue", {}))
 
+    def on_data(self, _, request, chunk):
+        request.add_body_chunk(chunk)
+
 class RequestProcessor(BodyReceiverHandler):
     """ Decorator to reply using a simple function """
 
@@ -44,9 +47,6 @@ class RequestProcessor(BodyReceiverHandler):
 
     def __call__(self):
         return self
-
-    def on_data(self, _, request, chunk):
-        request.add_body_chunk(chunk)
 
     def on_end(self, connection, request):
         self._callback(connection, request)
