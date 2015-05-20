@@ -72,6 +72,10 @@ class HTTPMessage(object):
             return ""
         return self._headers[key]
 
+    @property
+    def headers(self):
+        return self._headers.copy()
+
     def add_body_chunk(self, chunk):
         """ Add chunk to body """
         self._bodyv.append(chunk)
