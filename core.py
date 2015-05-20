@@ -28,6 +28,18 @@ class HTTPRequestHandler(object):
     def on_end(self, connection, request):
         """ Called at end of request """
 
+class HTTPResponseGenerator(HTTPRequestHandler):
+    """ Decorator to reply using a simple function """
+
+    def __init__(self, callback):
+        self._callback = callback
+
+    def __call__(self):
+        return self
+
+    def on_end(self, connection, request):
+        self._callback(connection, request)
+
 class BodyReceiverHandler(HTTPRequestHandler):
     """ Handler that expects to receive a body """
 
