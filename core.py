@@ -16,8 +16,8 @@ from .parser import HTTPParser
 
 from . import writer
 
-class HTTPRequestHandler(asyncore.dispatcher):
-    """ HTTP request handler """
+class HTTPRequestDispatcher(asyncore.dispatcher):
+    """ HTTP request dispatcher """
 
     def __init__(self, server, sock=None, mapx=None):
         asyncore.dispatcher.__init__(self, sock, mapx)
@@ -113,7 +113,7 @@ class HTTPServer(asyncore.dispatcher):
         if not result:
             return
         sock = result[0]
-        HTTPRequestHandler(self, sock)
+        HTTPRequestDispatcher(self, sock)
 
 def listen(settings):
     """ Listen for HTTP requests """
