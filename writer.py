@@ -10,7 +10,7 @@
 import logging
 import os
 
-def compose(first_line, headers, before, filep, after):
+def _compose(first_line, headers, before, filep, after):
     """ Compose a generic HTTP message """
 
     logging.debug("> %s", first_line)
@@ -63,13 +63,13 @@ def compose(first_line, headers, before, filep, after):
 
 def compose_response(code, reason, headers, body):
     """ Compose a generic HTTP message """
-    return compose("HTTP/1.1 %s %s" % (code, reason),
-                   headers, body, None, None)
+    return _compose("HTTP/1.1 %s %s" % (code, reason),
+                    headers, body, None, None)
 
 def compose_filep(code, reason, headers, filep):
     """ Compose a generic HTTP message """
-    return compose("HTTP/1.1 %s %s" % (code, reason),
-                   headers, None, filep, None)
+    return _compose("HTTP/1.1 %s %s" % (code, reason),
+                    headers, None, filep, None)
 
 def compose_error(code, reason):
     """ Compose an HTTP error message """
