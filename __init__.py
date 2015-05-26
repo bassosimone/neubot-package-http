@@ -12,7 +12,7 @@
 
      import asyncore
      import json
-     from neubot_scheduler import http
+     import neubot_http as http
 
      @http.RequestProcessor
      def simple(connection, request):
