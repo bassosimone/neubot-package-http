@@ -39,7 +39,7 @@
     main()
 """
 
-__version__ = 2.0
+__version__ = 3.0
 
 from .file_handler import FileHandler
 from .core import RequestHandler, RequestProcessor, listen
