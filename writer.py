@@ -10,7 +10,7 @@
 import logging
 import os
 
-def _compose(first_line, headers, before, filep, after):
+def _compose(first_line, headers, before, filep, after, size):
     """ Compose a generic HTTP message """
 
     logging.debug("> %s", first_line)
@@ -43,7 +43,7 @@ def _compose(first_line, headers, before, filep, after):
         else:
             yield before
     while filep:
-        data = filep.read(65536)
+        data = filep.read(size)
         if not data:
             break
         if ischunked:
@@ -59,12 +59,12 @@ def _compose(first_line, headers, before, filep, after):
 def compose_response(code, reason, headers, body):
     """ Compose an HTTP response with bounded body """
     return _compose("HTTP/1.1 %s %s" % (code, reason),
-                    headers, body, None, None)
+                    headers, body, None, None, 0)
 
-def compose_response_filep(code, reason, headers, filep):
+def compose_response_filep(code, reason, headers, filep, size=65536):
     """ Compose an HTTP response reading body from filep """
     return _compose("HTTP/1.1 %s %s" % (code, reason),
-                    headers, None, filep, None)
+                    headers, None, filep, None, size)
 
 def compose_response_error(code, reason):
     """ Compose an HTTP error message """
