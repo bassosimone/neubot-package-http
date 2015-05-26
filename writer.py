@@ -67,6 +67,11 @@ def compose_response_filep(code, reason, headers, filep, size=65536):
     return _compose("HTTP/1.1 %s %s" % (code, reason),
                     headers, None, filep, None, size)
 
+def compose_response_generator(code, reason, headers, generator):
+    """ Compose an HTTP response reading body from generator """
+    return _compose("HTTP/1.1 %s %s" % (code, reason),
+                    headers, None, None, generator, 0)
+
 def compose_response_error(code, reason):
     """ Compose an HTTP error message """
     body = """\
