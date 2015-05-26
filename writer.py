@@ -91,7 +91,7 @@ def compose_headers(code, reason, headers):
     """ Compose headers of HTTP response """
     return compose_response(code, reason, headers, None)
 
-def compose_redirect(target):
+def compose_response_redirect(target):
     """ Compose a redirect response """
     body = """\
         <HTML>
