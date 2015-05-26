@@ -16,12 +16,7 @@ def _compose(first_line, headers, before, filep, after):
     logging.debug("> %s", first_line)
     yield first_line + "\r\n"
 
-    ischunked = False
-    for name in headers:
-        ischunked = (name.lower() == "transfer-encoding" and
-                     headers[name].lower() == "chunked")
-        if ischunked:
-            break
+    ischunked = headers.get("Transfer-Encoding", "").lower() == "chunked"
 
     if not ischunked:
         tot = 0
