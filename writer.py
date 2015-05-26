@@ -62,12 +62,12 @@ def _compose(first_line, headers, before, filep, after):
             yield after
 
 def compose_response(code, reason, headers, body):
-    """ Compose a generic HTTP message """
+    """ Compose an HTTP response with bounded body """
     return _compose("HTTP/1.1 %s %s" % (code, reason),
                     headers, body, None, None)
 
-def compose_filep(code, reason, headers, filep):
-    """ Compose a generic HTTP message """
+def compose_response_filep(code, reason, headers, filep):
+    """ Compose an HTTP response reading body from filep """
     return _compose("HTTP/1.1 %s %s" % (code, reason),
                     headers, None, filep, None)
 

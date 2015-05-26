@@ -77,7 +77,7 @@ class FileRequestHandler(RequestHandler):
 
         logging.debug("fh: sending '%s' (i.e., '%s')", request.url, path)
 
-        connection.write(writer.compose_filep(200, "Ok", {
+        connection.write(writer.compose_response_filep(200, "Ok", {
             "Content-Type": mimetype,
             "Content-Encoding": encoding,  # if encoding is None
                                            # it is filtered out
