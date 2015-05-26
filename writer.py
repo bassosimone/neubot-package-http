@@ -71,7 +71,7 @@ def compose_response_filep(code, reason, headers, filep):
     return _compose("HTTP/1.1 %s %s" % (code, reason),
                     headers, None, filep, None)
 
-def compose_error(code, reason):
+def compose_response_error(code, reason):
     """ Compose an HTTP error message """
     body = """\
         <HTML>

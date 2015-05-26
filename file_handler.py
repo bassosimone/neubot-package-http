@@ -87,7 +87,7 @@ class FileRequestHandler(RequestHandler):
         """ Serve the file at path """
 
         if not os.path.isfile(path):
-            connection.write(writer.compose_error(404, "Not Found"))
+            connection.write(writer.compose_response_error(404, "Not Found"))
             return
 
         logging.debug("fh: url mapped to existing file: %s", path)
@@ -95,7 +95,7 @@ class FileRequestHandler(RequestHandler):
         try:
             filep = open(path, "rb")
         except (OSError, IOError):
-            connection.write(writer.compose_error(404, "Not Found"))
+            connection.write(writer.compose_response_error(404, "Not Found"))
             return
 
         self._serve_filep(connection, request, path, filep)
@@ -111,14 +111,14 @@ class FileRequestHandler(RequestHandler):
 
         if not self._rootdir:
             logging.warning("fh: rootdir is not set")
-            connection.write(writer.compose_error(403, "Forbidden"))
+            connection.write(writer.compose_response_error(403, "Forbidden"))
             return
 
         logging.debug("fh: requested to serve: %s", request.url)
 
         path = self._resolve_path(request.url)
         if not path:
-            connection.write(writer.compose_error(403, "Forbidden"))
+            connection.write(writer.compose_response_error(403, "Forbidden"))
             return
 
         logging.debug("fh: url mapped to: %s", path)

@@ -55,7 +55,7 @@ class NotFoundHandler(RequestHandler):
     """ '404 Not Found' handler """
 
     def on_end(self, connection, _):
-        connection.write(writer.compose_error("404", "Not Found"))
+        connection.write(writer.compose_response_error("404", "Not Found"))
 
 class RequestDispatcher(asyncore.dispatcher):
     """ HTTP request dispatcher """
