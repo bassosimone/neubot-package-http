@@ -10,7 +10,7 @@
 import logging
 import os
 
-def _compose(first_line, headers, before, filep, after, size):
+def _compose(first_line, headers, bounded_body, filep, after, size):
     """ Compose a generic HTTP message """
 
     logging.debug("> %s", first_line)
@@ -20,8 +20,8 @@ def _compose(first_line, headers, before, filep, after, size):
 
     if not ischunked:
         tot = 0
-        if before:
-            tot += len(before)
+        if bounded_body:
+            tot += len(bounded_body)
         if filep:
             filep.seek(0, os.SEEK_END)
             tot += filep.tell()
@@ -37,11 +37,11 @@ def _compose(first_line, headers, before, filep, after, size):
             yield header
     yield "\r\n"
 
-    if before:
+    if bounded_body:
         if ischunked:
-            yield compose_chunk(before)
+            yield compose_chunk(bounded_body)
         else:
-            yield before
+            yield bounded_body
     while filep:
         data = filep.read(size)
         if not data:
