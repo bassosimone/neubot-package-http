@@ -10,7 +10,7 @@
 import logging
 import os
 
-def _compose(first_line, headers, bounded_body, filep, after, size):
+def _compose(first_line, headers, bounded_body, filep, generator, size):
     """ Compose a generic HTTP message """
 
     logging.debug("> %s", first_line)
@@ -26,8 +26,8 @@ def _compose(first_line, headers, bounded_body, filep, after, size):
             filep.seek(0, os.SEEK_END)
             tot += filep.tell()
             filep.seek(0, os.SEEK_SET)
-        if after:
-            tot += len(after)
+        if generator:
+            raise RuntimeError("Cannot compute content length of generator")
         headers["Content-Length"] = tot
 
     for name, value in headers.items():
@@ -50,11 +50,12 @@ def _compose(first_line, headers, bounded_body, filep, after, size):
             yield compose_chunk(data)
         else:
             yield data
-    if after:
+    if generator:
         if ischunked:
-            yield compose_chunk(after)
+            for part in generator:
+                yield compose_chunk(part)
         else:
-            yield after
+            raise RuntimeError("This should really not happen")
 
 def compose_response(code, reason, headers, body):
     """ Compose an HTTP response with bounded body """
