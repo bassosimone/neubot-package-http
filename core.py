@@ -114,9 +114,9 @@ class Server(asyncore.dispatcher):
         self._file_handler = file_handler
         self._routes = {}
 
-    def add_route(self, url, generator):
+    def add_route(self, url, handler):
         """ Add a route """
-        self._routes[url] = generator
+        self._routes[url] = handler
 
     def route(self, request):
         """ Route request """
